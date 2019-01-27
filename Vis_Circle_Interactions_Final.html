@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+	
+
+#left {
+  width : 49.48%;
+  float : left;
+  height : 765px;
+  border: 1px solid #000000;
+  position: relative;
+  text-align: center;
+}
+
+#right {
+  width : 49.48%;
+  float : right;
+  height : 765px;
+}
+
+#textual {
+  height : 160px;
+  margin-top: 5px;
+  border: 1px solid #000000;
+}
+
+#inner {   
+  display: block;
+  height : 600px;    
+  border: 1px solid #000000;
+  text-align: center;
+  position: relative;
+}
+
+.cd-node circle {
+  fill: #fff;
+  stroke: black;
+  stroke-width: 1.5px;
+}
+
+.cd-node {
+  font: 10px sans-serif;
+}
+
+.cd-link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
+#close {
+    float:right;
+    display:inline-block;
+    padding:2px 5px;
+    background:#ccc;
+}
+
+.fd_node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.fd_link {
+  stroke: #999;
+  stroke-opacity: .6;
+  stroke-width: 1.5px;
+}
+
+.fd_graph-svg-component {
+    background-color: #ff0000;
+}
+
+.node {
+  font: 300 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  fill: #bbb;
+}
+
+.node:hover {
+  fill: #000;
+}
+
+.link {
+  stroke: steelblue;
+  stroke-opacity: .4;
+  fill: none;
+  pointer-events: none;
+}
+
+.innernode {
+  font: 300 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  fill: #bbb;
+}
+
+.innernode:hover {
+  fill: #000;
+}
+
+.innerlink {
+  stroke: green;
+  stroke-opacity: .4;
+  fill: none;
+  pointer-events: none;
+}
+
+.innernode:hover,
+.node:hover,
+.node--source,
+.node--target {
+  font-weight: 700;
+}
+
+.node--source {
+  fill: #2ca02c;
+}
+
+.node--target {
+  fill: #d62728;
+}
+
+.link--source,
+.link--target {
+  stroke-opacity: 1;
+  stroke-width: 2px;
+}
+
+.link--source {
+  stroke: #d62728;
+}
+
+.link--target {
+  stroke: #d62728;
+}
+
+circle {
+  fill: rgb(31, 119, 180);
+  fill-opacity: .25;
+  stroke: rgb(31, 119, 180);
+  stroke-width: 1px;
+}
+
+.leaf circle {
+  fill: #ff7f0e;
+  fill-opacity: 1;
+}
+
+.header{
+	text-align : center;
+	background: rgb(255, 150, 182); 
+	margin-bottom: 5px;
+}
+
+</style>
+<body>
+<div id="container">
+	<div id="left"> 
+		<div class="header"> Main Graph </div>
+		<div id="alert1" class="alert">  <text class="message"> Please click on any of the circle numbers to see the nodes in that circle </text> </div>
+		<div style="position:absolute;bottom:0;font-size:18px;">tension: <input id="scroll" style="position:relative;top:3px;" type="range" min="0" max="100" value="85"></div>
+    </div>
+	<div id="right">
+		<div id="inner"> 
+			<div class="header"> Sub Graph </div> 
+			<div id="alert2" class="alert">  <text class="message"> Please hover on any of the nodes to see its connections to another nodes </text> </div>
+			<div id="interaction" style="position:absolute;bottom:0;left:0;font-size:18px;display:none">tension: <input id="innerscroll" style="position:relative;top:3px;" type="range" min="0" max="100" value="85"></div>
+		</div>
+		<div id="textual">  <div class="header"> Description </div> </div>
+	</div>
+</div>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+
+var diameter = 600,
+    radius = diameter / 2,
+    innerRadius = radius - 120;
+
+var cluster = d3.layout.cluster()
+    .size([360, innerRadius])
+    .sort(null)
+    .value(function(d) { return d.size; });
+    
+var bundle = d3.layout.bundle();
+
+var line = d3.svg.line.radial()
+    .interpolate("bundle")
+    .tension(.85)
+    .radius(function(d) { return d.y; })
+    .angle(function(d) { return d.x / 180 * Math.PI; });
+
+var svg = d3.select("#left").append("svg")
+    .attr("width", diameter)
+    .attr("height", diameter)
+  	.append("g")
+    .attr("transform", "translate(" + radius + "," + radius + ")");
+    
+var div = d3.select("#inner")
+	.append("div")   
+	.attr("class", "tooltip")              
+	.style("opacity", 0)
+	.attr("width", 1000)
+    .attr("height", 1000);
+	
+var link = svg.append("g").selectAll(".link"),
+    node = svg.append("g").selectAll(".node");
+
+d3.select("#alert2.alert")
+		.style("visibility","hidden");
+
+d3.json("./Data_Circle_Interactions_Hierarchicaledgebundling.json", function(error, classes) {
+  var nodes = cluster.nodes(packageHierarchy(classes)),
+      links = packageImports(nodes);
+      splines = bundle(links);
+
+  link = link
+      .data(bundle(links))
+      .enter().append("path")
+      .each(function(d) { d.source = d[0], d.target = d[d.length - 1]; })
+      .attr("class", "link")
+      .attr("d", line);
+
+  node = node
+      .data(nodes.filter(function(n) { return (!n.children && n.imports.length > 0); }))
+      .enter().append("text")
+      .attr("class", "node")
+      .attr("dy", ".31em")
+      .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y + 8) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
+      .style("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })	
+      .text(function(d) { return d.key; })
+      .on("mouseover", mouseovered)
+      .on("mouseout", mouseouted)
+      .on("click",mouseclicked);
+      
+  d3.select("input[id=scroll]").on("change", function() {
+    line.tension(this.value / 100);
+    link.attr("d", function(d, i) { return line(splines[i]); });
+  });
+  
+});
+
+function mouseclicked(d){
+
+   	var height = 500,
+    	width = 500;
+	
+	d3.select("#inner").selectAll("*:not(.header):not(#interaction):not(#innerscroll):not(.alert):not(.message)").remove();
+	d3.select("#textual").selectAll("*:not(.header)").remove();
+	
+	d3.select("#textual")
+		.append("text")
+		.text("Selected circle is: Circle " + d.key)
+		.attr("style","display: block");
+		
+	d3.select("#interaction")
+		.style("display", null);
+	
+	d3.select("#alert1.alert")
+		.style("display","None");
+	
+	d3.select("#alert2.alert")
+		.style("visibility","visible");
+    				
+	d3.json("Data_Hierarchicaledgebundling.json", function(error, classes) {
+	
+		var diameter = 600,
+    		radius = diameter / 2,
+    		innerRadius = radius - 120;
+    
+    	var innercluster = d3.layout.cluster()
+    		.size([360, innerRadius])
+    		.sort(null)
+    		.value(function(d) { return d.size; });
+
+	
+		var svg = d3.select("#inner").append("svg")
+    			.attr("width", diameter)
+    			.attr("height", diameter)
+    			.attr("style","margin-top: 10px;")
+    			.append("g")
+    			.attr("transform", "translate(" + 300 + "," + 300 + ")");
+		
+		var innerlink = svg.append("g").selectAll(".innerlink"),
+		    innernode = svg.append("g").selectAll(".innernode");
+	
+		var nodes = innercluster.nodes(innerpackageHierarchy(classes,d.key));
+		
+		var max_imports = 0;
+		var nodeID = 0;
+		for(var i=2;i < nodes.length;i++){
+			var imports = 0;
+			
+			for(var j=0;j < nodes[i].imports.length;j++){
+				if(parseInt(nodes[i].imports[j].substring(0,d.name.lastIndexOf(".")).replace("Circle","")) == d.key){
+					imports = imports + 1;
+				}
+			}
+			if(imports == 0 && nodes.length > 3){
+			
+				if(i < nodes.length-1){
+					nodes[i].imports.push("Circle"+d.key+"."+nodes[i+1].key);
+					nodes[i+1].imports.push("Circle"+d.key+"."+nodes[i].key);
+				}
+				else{
+				  	nodes[i].imports.push("Circle"+d.key+"."+nodes[2].key);
+				  	nodes[2].imports.push("Circle"+d.key+"."+nodes[i].key);
+				}
+			
+			}
+			if(imports > max_imports){
+				max_imports = nodes[i].imports.length;
+				nodeID = nodes[i].key;
+			}
+			
+		} 
+		var	links = innerpackageImports(nodes,d.key);
+		var innersplines = bundle(links);
+		
+		innerlink = innerlink
+      	   	.data(bundle(links))
+      	   	.enter().append("path")
+    	   	.each(function(d) { d.source = d[0], d.target = d[d.length - 1]; })
+     	   	.attr("class", "innerlink")
+      		.attr("d", line);
+
+  		innernode = innernode
+      		.data(nodes.filter(function(n) { return !n.children; }))
+    		.enter().append("text")
+      		.attr("class", "innernode")
+      		.attr("dy", ".31em")
+      		.attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y + 8) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
+    		.attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+      		.text(function(d) { return d.key; })
+      		.on("mouseover", innermouseovered)
+      		.on("mouseout", innermouseouted);
+      	
+      	d3.select("input[id=innerscroll]").on("change", function() {
+    		line.tension(this.value / 100);
+    		innerlink.attr("d", function(d, i) { return line(innersplines[i]); });
+  		});
+      	
+      	d3.select("#textual")
+			.append("text")
+			.text("Number of nodes in the circle : " + innernode[0].length)
+			.attr("style","display: block");
+		
+		d3.select("#textual")
+			.append("text")
+			.text("Number of edges in the circle : " + innerlink[0].length/2)
+			.attr("style","display: block");
+		
+		d3.select("#textual")
+		.append("text")
+		.text("Most connected node in this circle is: " + nodeID)
+		.attr("style","display: block");
+      	
+      	d3.select("#textual")
+		.append("a")
+		.html("Link for user evaluation survey")
+		.attr("href","form/evaluation_final.html")
+		.attr("target","_blank")
+		.attr("style","display: block; margin-top: 40px; text-align: left;");
+      	
+      		
+      	function innermouseovered(d) {
+
+  			innernode
+      			.each(function(n) { n.target = n.source = false; });
+
+  			innerlink
+      			.classed("link--target", function(l) { if (l.target === d) return l.source.source = true; })
+      			.classed("link--source", function(l) { if (l.source === d) return l.target.target = true; })
+    			.filter(function(l) { return l.target === d || l.source === d; })
+      			.each(function() { this.parentNode.appendChild(this); });
+
+ 		 	innernode
+      			.classed("node--target", function(n) { return n.target; })
+      			.classed("node--source", function(n) { return n.source; });
+		}
+
+		function innermouseouted(d) {
+
+  			innerlink
+      			.classed("link--target", false)
+      			.classed("link--source", false);
+
+  			innernode
+      			.classed("node--target", false)
+      			.classed("node--source", false);
+		}
+  	});		
+		
+}
+
+
+
+function mouseovered(d) {
+
+  node
+      .each(function(n) { n.target = n.source = false; });
+
+  link
+      .classed("link--target", function(l) { if (l.target === d) return l.source.source = true; })
+      .classed("link--source", function(l) { if (l.source === d) return l.target.target = true; })
+    .filter(function(l) { return l.target === d || l.source === d; })
+      .each(function() { this.parentNode.appendChild(this); });
+
+  node
+      .classed("node--target", function(n) { return n.target; })
+      .classed("node--source", function(n) { return n.source; });
+}
+
+function mouseouted(d) {
+
+  link
+      .classed("link--target", false)
+      .classed("link--source", false);
+
+  node
+      .classed("node--target", false)
+      .classed("node--source", false);
+}
+
+d3.select(self.frameElement).style("height", diameter + "px");
+
+// Lazily construct the package hierarchy from class names.
+function packageHierarchy(classes) {
+  var map = {};
+
+  function find(name, data) {
+    var node = map[name], i;
+    if (!node) {
+      node = map[name] = data || {name: name, children: []};
+      if (name.length) {
+        node.parent = find(name.substring(0, i = name.lastIndexOf(".")));
+        node.parent.children.push(node);
+        node.key = name.substring(i + 1);
+      }
+    }
+    return node;
+  }
+
+  classes.forEach(function(d) {
+    find(d.name, d);
+  });
+
+  return map[""];
+}
+
+// Return a list of imports for the given array of nodes.
+function packageImports(nodes) {
+  var map = {},
+      imports = [];
+
+  // Compute a map from name to node.
+  nodes.forEach(function(d) {
+    map[d.name] = d;
+  });
+
+  // For each import, construct a link from the source to target node.
+  nodes.forEach(function(d) {
+    if (d.imports) d.imports.forEach(function(i) {
+      imports.push({source: map[d.name], target: map[i]});
+    });
+  });
+
+  return imports;
+}
+
+function innerpackageHierarchy(classes,id) {
+  var map = {};
+
+  function find(name, data) {
+    var node = map[name], i;
+    if (!node) {
+      node = map[name] = data || {name: name, children: []};
+      if (name.length) {
+        node.parent = find(name.substring(0, i = name.lastIndexOf(".")));
+        node.parent.children.push(node);
+        node.key = name.substring(i + 1);
+      }
+    }
+    return node;
+  }
+
+  classes.forEach(function(d) {
+  	var parent = parseInt(d.name.substring(0,d.name.lastIndexOf(".")).replace("Circle",""));
+  	if(parent == id)
+  	{
+  		find(d.name, d);
+  	}
+  });
+  
+  return map[""];
+}
+
+// Return a list of imports for the given array of nodes.
+function innerpackageImports(nodes,id) {
+  var map = {},
+      imports = [];
+
+  // Compute a map from name to node.
+  nodes.forEach(function(d) {
+    map[d.name] = d;
+  });
+
+  // For each import, construct a link from the source to target node.
+  nodes.forEach(function(d) {
+    if (d.imports) d.imports.forEach(function(i) {
+      var parent = parseInt(i.substring(0,i.lastIndexOf(".")).replace("Circle",""));
+      if(parent == id) {
+    	 imports.push({source: map[d.name], target: map[i]});
+      }
+    });
+  });
+
+  return imports;
+}
+// Generates random links
+function randlinkgen(children){
+	var links = [];
+	var no_links;
+	if(children.length < 10){
+		no_links = children.length * (children.length - 1);
+	}else{
+		no_links = children.length * (children.length - 1)/4;
+	}
+	for(var i=0; i< no_links; i++){
+		var link = {};
+		
+		link.source = children[getRandomInt(0,children.length-1)].name;
+		link.target = children[getRandomInt(0,children.length-1)].name;
+		if(link.source != link.target){
+			links.push(link);	
+		}
+	}
+	return links;
+}
+
+// Generate random int with in a range
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+</script>
+
+</body>
+</html>

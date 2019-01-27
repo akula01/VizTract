@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+circle {
+  fill: rgb(31, 119, 180);
+  fill-opacity: .25;
+  stroke: rgb(31, 119, 180);
+  stroke-width: 1px;
+}
+
+.leaf circle {
+  fill: #ff7f0e;
+  fill-opacity: 1;
+}
+
+text {
+  font: 10px sans-serif;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var diameter = 2500,
+    format = d3.format(",d");
+
+var pack = d3.layout.pack()
+	.sort(d3.descending)
+    .size([diameter - 4, diameter - 4])
+    .value(function(d) { return d.size; });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", diameter)
+    .attr("height", diameter)
+  .append("g")
+    .attr("transform", "translate(2,2)");
+
+d3.json("Data_ClusterDendogram.json", function(error, root) {
+  var node = svg.datum(root).selectAll(".node")
+      .data(pack.nodes)
+    .enter().append("g")
+      .attr("class", function(d) { return d.children ? "node" : "leaf node"; })
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+  node.append("title")
+      .text(function(d) { return d.name + (d.children ? "" : ": " + format(d.size)); });
+
+  node.append("circle")
+      .attr("r", function(d) { return d.r; });
+
+  node.filter(function(d) { return !d.children; }).append("text")
+      .attr("dy", ".3em")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.name.substring(0, d.r / 3); });
+   
+   d3.json("Data_Forcedirected.json", function(data) {
+
+		var links = data.links.slice(0,10000);
+		
+		links.forEach(function(link,i) {
+			
+			var source = link.source; 
+  			var target =link.target;
+  			
+  			var haveCommon = false;
+  			for( var i = 0; i < link.sourcegroup.length; i++)
+  				for( var j=0; j < link.targetgroup.length; j++)
+  				 	if(link.sourcegroup[i] == link.targetgroup[j])
+  						haveCommon = true;
+  			
+  			if(root.nodes.indexOf(source) > -1 && root.nodes.indexOf(target) > -1 && !haveCommon) {
+  			
+  				var sourceNodes = svg.datum(root).selectAll(".node").filter( function(d) { 
+  														return d.name == source; 
+  												  });
+  				sCoords = [];
+  				sourceNodes[0].forEach(function(node){
+  					sCoords.push(d3.transform(d3.select(node).attr("transform")).translate);
+  				});
+  			
+  				if(sCoords.length == 0)
+  					return;
+  							
+  				var targetNodes = svg.datum(root).selectAll(".node").filter( function(d) { 
+  														return d.name == target; 
+  												  });
+  			
+  				tCoords = [];
+  				targetNodes[0].forEach(function(node){
+  					tCoords.push(d3.transform(d3.select(node).attr("transform")).translate);
+  				});
+  			
+  				if(tCoords.length == 0)
+  					return;
+  			
+  				svg.append("line")         
+    				.style("stroke", "white")  
+    				.attr("x1", sCoords[0][0])     
+    				.attr("y1", sCoords[0][1])     
+    				.attr("x2", tCoords[0][0])     
+    				.attr("y2", tCoords[0][1]);
+    		}
+  		});
+  });
+  
+
+});
+
+d3.select(self.frameElement).style("height", diameter + "px");
+
+</script>
