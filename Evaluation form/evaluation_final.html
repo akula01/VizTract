@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Evaluation Form</title>
+<link rel="stylesheet" type="text/css" href="view.css" media="all">
+<script type="text/javascript" src="view.js"></script>
+
+</head>
+<body id="main_body" >	
+	<img id="top" src="top.png" alt="">
+	<div id="form_container">
+		<h3> <a> </a> </h3>
+		<form id="evaluationform" class="appnitro"  method="post" action="../default.php">
+			<div class="form_description">
+				<h1> <u> User Evaluation Survey </u> </h1>
+				<p>Please enter the following details and submit the form.</p>
+			</div>						
+			<div>
+			 	<h2> <u> Feedback about the System </u> </h2>
+			 	<ul>
+			 		<li id="li_1" >
+						<label class="description" for="element_1"> 1. What do you think the visualization represent? </label>
+						<div>
+							<textarea id="element_1" name="element_1" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li id="li_2" >
+						<label class="description" for="element_2"> 2. Are the user interactions provided intuitive? </label>
+						<div>
+							<textarea id="element_2" name="element_2" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li id="li_3" >
+						<label class="description" for="element_3"> 3. Is the information provided in the text box helpful? </label>
+						<div>
+							<textarea id="element_3" name="element_3" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li id="li_4" >
+						<label class="description" for="element_4"> 4. What do you think is the difference between main graph and subgraph? </label>
+						<div>
+							<textarea id="element_4" name="element_4" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li id="li_5" >
+						<label class="description" for="element_5"> 5. Are you able to see all the edges easily? </label>
+						<div>
+							<textarea id="element_5" name="element_5" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li id="li_6" >
+						<label class="description" for="element_6"> 6. Do you think the colors used are apt? </label>
+						<div>
+							<textarea id="element_6" name="element_6" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li id="li_7" >
+						<label class="description" for="element_7"> 7. Do you think it is possible to depict some other information using this visualization? </label>
+						<div>
+							<textarea id="element_7" name="element_7" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li id="li_8" >
+						<label class="description" for="element_8"> 8. How do you rate this visualization? </label>
+						<span>
+							<input id="element_8_1" name="element_8" class="element radio" type="radio" value="1" />
+							<label class="choice" for="element_8_1">Very Good</label>
+							<input id="element_8_2" name="element_8" class="element radio" type="radio" value="2" />
+							<label class="choice" for="element_8_2">Good</label>
+							<input id="element_8_3" name="element_8" class="element radio" type="radio" value="3" />
+							<label class="choice" for="element_8_3">Average</label>
+							<input id="element_8_4" name="element_8" class="element radio" type="radio" value="4" />
+							<label class="choice" for="element_8_4">Bad</label>
+						</span> 
+					</li>
+					
+			 	</ul>
+			</div>	 
+				
+			<div>
+				<h2> <u> Feedback about the User </u> </h2>
+				
+				<ul>
+					<li id="name" >
+						<label class="description" for="element_3"> 9. What is your Nationality? </label>
+							<span>
+								<input id="element_3_1" name= "element_9" class="element text" maxlength="255" size="48" value=""/>
+								
+							</span>
+					 
+					</li>
+					<li id="User Details" >
+						<label class="description" for="element_10"> 10. What is your area of Specialization? </label>
+						<div>
+							<select class="element select medium" id="element_10" name="element_10"> 
+								<option value="" selected="selected"></option>
+								<option value="1" >Architecture</option>
+								<option value="2" >Biology</option>
+								<option value="3" >Computer Science</option>
+								<option value="4" >Chemistry</option>
+								<option value="5" >Electronics</option>
+								<option value="6" >Mathematics</option>
+								<option value="7" >Physics</option>
+								<option value="8" >Psychology/Social Sciences</option>
+								<option value="9" >others</option>
+							</select>
+						</div> 
+					<li id="li_8" >
+						<label class="description" for="element_11"> 11. Are you apart of any social network? </label>
+						<div>
+							<textarea id="element_11" name="element_11" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li id="li_9" >
+						<label class="description" for="element_12"> 12. If so, since when are you part of it? </label>
+						<div>
+							<textarea id="element_12" name="element_12" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li id="li_10" >
+						<label class="description" for="element_13"> 13. How many circles do you think you belong to? </label>
+						<div>
+							<textarea id="element_13" name="element_13" class="element textarea small"></textarea>  
+						</div> 
+					</li>
+					<li id="li_11" >
+						<label class="description" for="element_14"> 14. How much time do you spend on such networks everyday? </label>
+						<div>
+							<textarea id="element_14" name="element_14" class="element textarea small"></textarea>  
+						</div> 
+					</li>
+					<li id="12" >
+						<label class="description" for="element_15"> 15. Any suggestions/comments? </label>
+						<div>
+							<textarea id="element_15" name="element_15" class="element textarea small"></textarea> 
+						</div> 
+					</li>
+					<li class="buttons">
+				   		<input type="hidden" name="form_id" value="969931" />
+			    		<input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+					</li>
+				</ul>
+			</div>
+		</form>	
+	</div>
+	<img id="bottom" src="bottom.png" alt="">
+</body>
+</html>
